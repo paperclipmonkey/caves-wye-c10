@@ -439,6 +439,7 @@ survey C10 -title "C10 -- Bric 4 Group" -entrance 2
 
   map m-C10-extended -title "C10 -- extended elevation"
     C10-ee
+    C10-ee-surface
   endmap
 
   # The eight cross-section scraps SexyTopo created (C10PX2, C10PX3,
