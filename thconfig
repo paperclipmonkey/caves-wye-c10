@@ -255,11 +255,12 @@ layout base-C10
   code tex-map
 
     % ---- compatibility shims ----------------------------------------
-    % The CI container currently ships Therion 6.3.4, which predates
-    % some of the TeX helpers 6.4 defines. Guarding them with \ifx keeps
-    % this file working on both, and costs nothing once the container
-    % catches up. If a sheet dies with "Undefined control sequence" and
-    % an <inserted text> naming a macro, add it here.
+    % These are no-ops on Therion 6.4, which defines both macros, and
+    % are kept so the file still builds under 6.3.x -- the container was
+    % on 6.3.4 until recently, and other people may have an older
+    % Therion installed locally. If a sheet ever dies with "Undefined
+    % control sequence" and an <inserted text> naming a macro, add it
+    % to this list.
     \ifx\setsize\undefined  \def\setsize[#1]{\size[#1]}\fi
     \ifx\rgbcolor\undefined \def\rgbcolor[#1 #2 #3]{}\fi
 

@@ -33,7 +33,9 @@ jobs:
         run: mkdir -p output
 
       # The container carries Therion, a TeX distribution, METAPOST,
-      # Ghostscript and python3 -- everything the build needs.
+      # Ghostscript and python3 -- everything the build needs. It is
+      # pinned to a version rather than :latest so a survey rebuilt in a
+      # year renders identically; bump it deliberately.
       # --user maps the container's root output back to the runner user
       # so later steps can read and upload it.
       - name: Build with Therion
@@ -41,7 +43,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/project" \
             -u "$(id -u):$(id -g)" \
-            ghcr.io/paperclipmonkey/therion:latest thconfig
+            ghcr.io/paperclipmonkey/therion:6.4.0 thconfig
 
       - name: Fail if Therion logged an error
         run: |
@@ -64,7 +66,7 @@ jobs:
             -u "$(id -u):$(id -g)" \
             -e GITHUB_SHA -e GITHUB_REF_NAME -e GITHUB_REPOSITORY \
             --entrypoint python3 \
-            ghcr.io/paperclipmonkey/therion:latest web/make_index.py
+            ghcr.io/paperclipmonkey/therion:6.4.0 web/make_index.py
         env:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REF_NAME: ${{ github.ref_name }}

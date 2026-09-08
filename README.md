@@ -36,7 +36,7 @@ therion
 Or with no local install, using the same container CI uses:
 
 ```bash
-docker run --rm -v "$PWD:/project" ghcr.io/paperclipmonkey/therion:latest thconfig
+docker run --rm -v "$PWD:/project" ghcr.io/paperclipmonkey/therion:6.4.0 thconfig
 python3 web/make_index.py
 ```
 
@@ -93,11 +93,15 @@ GitHub Pages must be set to **Source: GitHub Actions** in
   filtered out before reaching any line symbol, and no symbol set draws
   them. Trace them from the `.xvi` backdrop in `sketch/`, or look at
   `output/C10-walls.lox`, which is a 3D model built from the splays.
-- **The CI container is Therion 6.3.4**, older than current releases. The
-  `code tex-map` block starts with a couple of `\ifx` shims for helpers
-  that only exist in 6.4 (`\setsize`, `\rgbcolor`). If a sheet dies with
-  *Undefined control sequence* and an `<inserted text>` naming a macro,
-  add it to that list.
+- **The build is pinned to `ghcr.io/paperclipmonkey/therion:6.4.0`**, not
+  `:latest`, so a survey rebuilt in a year renders identically. Bump it
+  in `.github/workflows/build.yml` deliberately. That image is multi-arch,
+  so it runs natively on Apple Silicon as well as on the CI runners.
+  The `code tex-map` block still opens with two `\ifx` shims for helpers
+  that only exist in 6.4 (`\setsize`, `\rgbcolor`); they are no-ops on
+  6.4 and are kept so the file also builds under an older local Therion.
+  If a sheet dies with *Undefined control sequence* and an
+  `<inserted text>` naming a macro, add it to that list.
 - **`\legendbox` is `\def`, not `\long\def`** — a `\par` token anywhere in
   its argument gives *Paragraph ended before \legendbox was complete* and
   a cascade of *Too many }'s*. Use `\endgraf`, and keep blank lines out of
