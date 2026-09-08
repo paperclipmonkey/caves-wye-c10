@@ -228,6 +228,55 @@ point -51.552452 40.0543 label -text " tree " -scale xs
   point -32.4 -1631.2 continuation
 
 
+
+
+  # =================================================================
+  #  Cross-section leaders
+  #  `line section` ties a pulled-out section to the passage it cuts:
+  #  drawn from the station where the section was taken to the anchor
+  #  where the section is drawn, Therion renders a cut mark on the
+  #  passage and a leader across to the section.
+  #
+  #  The line carries no reference to the scrap -- what ties them
+  #  together is that it ends where the matching `point section
+  #  -scrap ...` anchor sits.
+  #
+  #  NOTE when scripting this: take the station coordinates from the
+  #  C10-plan scrap only. Each section scrap carries a station marker of
+  #  its own, in section-local coordinates, and a whole-file scan picks
+  #  those up instead.
+  # =================================================================
+  # station 2 -> C10PX2
+  line section
+    123.2 -179.4
+    76.4 229.0
+  endline
+  # station 3 -> C10PX3
+  line section
+    84.8 -269.3
+    -232.0 -116.7
+  endline
+  # station 4 -> C10PX4
+  line section
+    105.0 -340.9
+    19.8 -490.6
+  endline
+  # station 5 -> C10PX5
+  line section
+    191.1 -449.1
+    281.9 -240.2
+  endline
+  # station 9 -> C10PX9
+  line section
+    289.3 -875.3
+    20.9 -697.4
+  endline
+  # station 11 -> C10PX11
+  line section
+    161.5 -973.5
+    -349.3 -1088.4
+  endline
+
 endscrap
 
 scrap C10PX2 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
