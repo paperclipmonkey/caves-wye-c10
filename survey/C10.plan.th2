@@ -4,7 +4,10 @@ encoding utf-8
 ##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "../sketch/C10.plan.xvi" 0 {}
 ##XTHERION## xth_me_area_zoom_to 25
 
-scrap C10-plan -projection plan
+scrap C10-plan -projection plan -walls on \
+  -title "C10 plan" \
+  -author 2026.09.06 "Lizzie Waterworth" \
+  -copyright 2026 "Bric 4 Group"
 
 point 0.0 0.0 station -name 1
 
