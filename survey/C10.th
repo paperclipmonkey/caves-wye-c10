@@ -26,7 +26,10 @@ survey C10 -title "C10 -- Bric 4 Group" -entrance 1
 
     # A person is "<first name> <surname>", exactly two whitespace-
     # separated parts; join extra forenames with a slash ("A N/Other").
-    team "Lizzie Waterworth" notes pictures            # <<< EDIT
+    # "Bric 4 group" is rejected -- a person is exactly two parts.
+    # Joining the forenames with "/" satisfies the parser and still
+    # prints as "Bric 4 group" on the sheet.
+    team "Bric/4 group" notes pictures                 # <<< EDIT
     team "A N/Other" instruments tape compass clino    # <<< EDIT
 
     explo-team "A N/Other"                             # <<< EDIT

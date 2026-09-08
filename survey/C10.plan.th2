@@ -142,8 +142,15 @@ point -51.552452 40.0543 label -text " tree " -scale xs
   -149.4 -546.8 -158.4 -495.5 -164.7 -468.0
   -171.0 -440.5 -180.2 -422.1 -180.2 -422.1
   endline
-  line wall -subtype bedrock
+  # --- cliff face (surface feature, not passage wall) ----------------
+  # `slope` draws the scarp hachures. It is not a wall type, so it would
+  # default to -outline none and drop out of the scrap boundary; the
+  # explicit -outline out keeps the passage fill closed against it.
+  # l-size sets the hachure length in drawing units and must be given on
+  # at least one point.
+  line slope -outline out
     -180.2 -422.1
+    l-size 22
     -179.7 -415.6 -163.3 -353.7 -127.4 -312.1
     -91.6 -270.4 -86.8 -247.2 -48.1 -227.8
     -9.3 -208.5 32.3 -186.7 42.0 -189.6
@@ -186,10 +193,19 @@ point -51.552452 40.0543 label -text " tree " -scale xs
     5.3 -1446.2 9.9 -1487.4 6.2 -1502.4
   endline
 
-  line wall -subtype bedrock
-    289.7 52.9
-    289.7 52.9 268.5 -27.4 242.4 -78.8
-    216.2 -130.1 136.4 -172.3 136.4 -172.3
+  # --- cliff face, continued east of the entrances -------------------
+  # Point order reversed (was NE->SW) so it runs the same way as the
+  # western segment. Slope hachures hang off one side of the line, so
+  # two segments of the same cliff drawn in opposite directions end up
+  # with ticks on opposite sides. Note `-reverse on` does NOT work here:
+  # it flips the geometry but leaves l-size attached to what is now the
+  # last point, and Therion then fails with "no slope size specification
+  # at any line point". Reverse the coordinates instead.
+  line slope -outline out
+    136.4 -172.3
+    l-size 22
+    136.4 -172.3 216.2 -130.1 242.4 -78.8
+    268.5 -27.4 289.7 52.9 289.7 52.9
   endline
 
   line wall
@@ -236,6 +252,18 @@ point -51.552452 40.0543 label -text " tree " -scale xs
     smooth off
   endline
 
+  # --- cliff face, western continuation ------------------------------
+  # Every `slope` line needs an l-size on at least one point or the build
+  # stops with "no slope size specification at any line point". 22 to
+  # match the other two segments.
+  line slope -outline out
+  -310.9 -609.9
+  l-size 22
+  smooth off
+  -310.9 -609.9 -320.3 -632.2 -350.3 -657.5
+  -366.1 -670.8 -428.6 -702.6 -428.6 -702.6
+  smooth off
+  endline
 endscrap
 
 scrap C10PX2 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
