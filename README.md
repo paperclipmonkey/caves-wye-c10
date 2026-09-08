@@ -54,6 +54,7 @@ Output lands in `output/` (git-ignored). Open `output/index.html`.
 | `sketch/` | SexyTopo backdrops (`.xvi`) to trace over in XTherion. |
 | `fonts/` | DejaVu Sans, used for all map text. |
 | `web/make_index.py` | Builds the GitHub Pages landing page from `output/`. |
+| `tools/fit-canvas.py` | Refits the XTherion editing canvas to the drawing. |
 | `.github/workflows/build.yml` | Build, publish, and PR previews. |
 
 SexyTopo's own filenames are kept so a fresh export from the phone drops
@@ -89,6 +90,28 @@ GitHub Pages must be set to **Source: GitHub Actions** in
   is a `cs` and `fix` in the file, so *deleting* that line makes Therion
   compute declination from its geomagnetic model and silently rotate the
   whole survey. Change it deliberately.
+- **If the drawing runs off-screen in XTherion / Therion Studio and you
+  cannot scroll or zoom back to it**, the editing canvas is too small —
+  not the view. The first line of a `.th2`,
+
+  ```
+  ##XTHERION## xth_me_area_adjust <left> <top> <right> <bottom>
+  ```
+
+  bounds the working area. Anything outside it is unreachable, because
+  there is no canvas there to scroll to. Therion itself ignores this
+  line when building maps, so a wrong value breaks editing only. The
+  editor rewrites it on save, so it drifts as the drawing grows. Refit
+  it with:
+
+  ```bash
+  python3 tools/fit-canvas.py survey/*.th2       # fix
+  python3 tools/fit-canvas.py --check survey/*.th2   # just report
+  ```
+
+  Close the file in the editor first, or reopen it afterwards —
+  otherwise the editor saves its stale copy back over the fix.
+
 - **Splay shots cannot be drawn on a Therion map sheet.** They are
   filtered out before reaching any line symbol, and no symbol set draws
   them. Trace them from the `.xvi` backdrop in `sketch/`, or look at
