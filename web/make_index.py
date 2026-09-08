@@ -82,16 +82,41 @@ def render_preview(pdf_path, png_path, width=1100):
 
 
 def survey_stats():
-    """Pull the headline numbers out of therion.log."""
+    """Headline numbers, from the centreline CSV and therion.log.
+
+    Deliberately NOT from the log's "Survey contains N survey stations"
+    line: Survex counts every splay endpoint as a station, so for this
+    survey it reports 274 rather than the 20 stations actually on the
+    centreline. The CSV has a row per shot with "-" as the To station
+    for splays, which lets us separate them properly.
+    """
     stats = {}
+    csv_path = os.path.join(OUT, "C10.csv")
+    if os.path.exists(csv_path):
+        import csv as _csv
+        legs = splays = 0
+        names = set()
+        with open(csv_path, newline="", errors="replace") as fh:
+            for row in _csv.DictReader(fh):
+                frm = (row.get("From") or "").strip()
+                to = (row.get("To") or "").strip()
+                if frm and frm != "-":
+                    names.add(frm)
+                if to in ("-", "."):
+                    splays += 1
+                else:
+                    legs += 1
+                    if to:
+                        names.add(to)
+        if names:
+            stats["Stations"] = str(len(names))
+            stats["Legs"] = str(legs)
+            stats["Splay shots"] = str(splays)
+
     log = os.path.join(ROOT, "therion.log")
     if not os.path.exists(log):
         return stats
     text = open(log, "r", errors="replace").read()
-    m = re.search(r"Survey contains (\d+) survey stations, joined by (\d+) legs", text)
-    if m:
-        stats["Stations"] = m.group(1)
-        stats["Legs"] = m.group(2)
     m = re.search(r"Total length of survey legs\s*=\s*([\d.]+)m", text)
     if m:
         stats["Surveyed length"] = f"{float(m.group(1)):.1f} m"
@@ -254,6 +279,13 @@ def main():
 
     with open(os.path.join(OUT, "index.html"), "w") as f:
         f.write("\n".join(doc))
+
+    # Same numbers as markdown, so the workflow's job summary and PR
+    # comment can reuse them instead of re-parsing the log themselves.
+    with open(os.path.join(OUT, "stats.md"), "w") as f:
+        for k, v in stats.items():
+            f.write(f"- {k}: **{v}**\n")
+
     print(f"index.html written: {len(cards)} sheets, {len(rows)} data files")
 
 

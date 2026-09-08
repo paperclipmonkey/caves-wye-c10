@@ -75,9 +75,7 @@ jobs:
           {
             echo "### Survey built"
             echo
-            sed -n 's/.*Survey contains \([0-9]*\) survey stations, joined by \([0-9]*\) legs.*/- **\1** stations, **\2** legs/p' therion.log | head -1
-            sed -n 's/.*Total length of survey legs = *\([0-9.]*\)m.*/- Surveyed length **\1 m**/p' therion.log | head -1
-            sed -n 's/.*Vertical range = \([0-9.]*\)m.*/- Vertical range **\1 m**/p' therion.log | head -1
+            cat output/stats.md
             echo
             echo "| File | Size |"
             echo "| --- | ---: |"
@@ -105,16 +103,9 @@ jobs:
             const fs = require('fs');
             const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const art = '${{ steps.pr_artifact.outputs.artifact-url }}';
+            // web/make_index.py already worked these out; reuse them.
             let stats = '';
-            try {
-              const log = fs.readFileSync('therion.log', 'utf8');
-              const s = log.match(/Survey contains (\d+) survey stations, joined by (\d+) legs/);
-              const l = log.match(/Total length of survey legs\s*=\s*([\d.]+)m/);
-              const v = log.match(/Vertical range = ([\d.]+)m/);
-              if (s) stats += `- **${s[1]}** stations, **${s[2]}** legs\n`;
-              if (l) stats += `- Surveyed length **${l[1]} m**\n`;
-              if (v) stats += `- Vertical range **${v[1]} m**\n`;
-            } catch (e) {}
+            try { stats = fs.readFileSync('output/stats.md', 'utf8'); } catch (e) {}
 
             const files = fs.readdirSync('output')
               .filter(f => /\.(pdf|svg|3d|lox)$/.test(f))
