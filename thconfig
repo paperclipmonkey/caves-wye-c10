@@ -214,9 +214,9 @@ layout base-C10
 
   # --- PDF metadata (shows in the reader's document properties) --------
   doc-title    "C10 -- Bric 4 Group"
-  doc-author   "Lizzie Waterworth / Bric 4 Group"
+  doc-author   "Mikey Waterworth / Bric 4 Group"
   doc-subject  "Cave survey, C10"
-  doc-keywords "cave survey, Therion, C10, Bric 4 Group, Mendip"
+  doc-keywords "cave survey, Therion, C10, Wye Valley, Yat Rock"
 
   # Geospatial PDF: lets Acrobat/QGIS read real coordinates off the map.
   # Real here: the entrance fix in survey/C10.th is a GPS reading.
@@ -294,11 +294,18 @@ layout base-C10
     \def\maplayout{
 
       % ---- title band, above the drawing ----------------------------
+      % Anchored {50}{100}{S}: bottom-CENTRE of the box on the top-centre
+      % of the map, so the band is centred over the drawing whatever
+      % width the drawing happens to be. Anchoring it {0}{100}{SW} pins
+      % it to the map's left edge instead, and on a tall narrow survey --
+      % where the footer's minimum width is wider than the map -- the
+      % page then grows rightwards and the cave sits jammed against the
+      % left margin with a column of white space beside it.
       % The north arrow rides on the same row rather than being pinned
       % to the map's top-right corner: on a tall narrow survey the map
       % is narrower than the title text, and a corner-pinned arrow
       % lands on top of the title.
-      \legendbox{0}{100}{SW}{\vbox{
+      \legendbox{50}{100}{S}{\vbox{
         \footW=\hsize \ifdim\footW<\footWmin \footW=\footWmin \fi
         \hsize=\footW
         \footT=\footW \advance\footT by -30mm
@@ -329,7 +336,10 @@ layout base-C10
       \sheetextras
 
       % ---- footer band, below the drawing ----------------------------
-      \legendbox{0}{0}{NW}{\vbox{
+      % {50}{0}{N} for the same reason: top-centre of the box on the
+      % bottom-centre of the map, so map and furniture share a centre
+      % line and the page grows evenly on both sides.
+      \legendbox{50}{0}{N}{\vbox{
 
         % \hsize here is the width of the DRAWING, not of the page, and
         % a sheet of cross sections is only a few centimetres wide. Left
@@ -425,7 +435,7 @@ layout plan-sheet
   #   drawing, and the page widens to suit.
   map-header -8 100 ne      # -8% leaves a gutter for the grid coordinates
 
-  map-comment "SURVEY IN PROGRESS -- centreline only; passage walls are not drawn yet. Entrance fixed by GPS. Trace the splays from sketch/C10.plan.xvi."
+  map-comment "SURVEY IN PROGRESS -- passage walls are still being drawn and the outline is not yet closed. Entrance fixed by GPS."
 
   # --- a photo, when you have one ---------------------------------------
   # base-C10 defines \sheetextras as empty and calls it from \maplayout;
