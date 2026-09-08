@@ -1,0 +1,49 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -500.00 750.00 3350.00 -750.00
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "../sketch/C10.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap C10-ee -projection extended
+
+point 0.0 0.0 station -name 1
+
+point 217.60512 97.42748 station -name 2
+
+point 315.43057 117.114006 station -name 3
+
+point 389.80872 124.59397 station -name 4
+
+point 528.0353 154.94733 station -name 5
+
+point 584.3345 147.78223 station -name 6
+
+point 804.08093 160.59892 station -name 7
+
+point 956.7456 136.51103 station -name 8
+
+point 1047.7753 100.79225 station -name 9
+
+point 1174.7948 128.09167 station -name 10
+
+point 1228.4711 160.9213 station -name 11
+
+point 1348.7898 150.29895 station -name 12
+
+point 1429.0299 97.13674 station -name 13
+
+point 1569.5492 96.672195 station -name 14
+
+point 1657.6248 128.11554 station -name 15
+
+point 1812.4468 146.72784 station -name 16
+
+point 2009.9806 145.66704 station -name 17
+
+point 2288.143 209.09894 station -name 18
+
+point 2426.0457 196.574 station -name 19
+
+point 2728.8093 151.14374 station -name 20
+
+endscrap

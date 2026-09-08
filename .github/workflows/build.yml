@@ -1,0 +1,170 @@
+name: Build survey
+
+# Every push to main rebuilds the sheets and publishes them to GitHub
+# Pages. Pull requests get the same build, but the results are attached
+# to the run as a downloadable artifact and summarised on the PR instead
+# of being published.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The container carries Therion, a TeX distribution, METAPOST,
+      # Ghostscript and python3 -- everything the build needs.
+      # --user maps the container's root output back to the runner user
+      # so later steps can read and upload it.
+      - name: Build with Therion
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -u "$(id -u):$(id -g)" \
+            ghcr.io/paperclipmonkey/therion:latest thconfig
+
+      - name: Fail if Therion logged an error
+        run: |
+          if grep -qE "^therion: error" therion.log; then
+            echo "::error::Therion reported an error"
+            grep -nE "^therion: (error|warning)" therion.log
+            exit 1
+          fi
+          # Warnings are worth surfacing but not worth failing on.
+          if grep -qiE "warning" therion.log; then
+            echo "::group::Therion warnings"
+            grep -inE "warning" therion.log | sort -u
+            echo "::endgroup::"
+          fi
+
+      - name: Build the index page
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -u "$(id -u):$(id -g)" \
+            -e GITHUB_SHA -e GITHUB_REF_NAME -e GITHUB_REPOSITORY \
+            --entrypoint python3 \
+            ghcr.io/paperclipmonkey/therion:latest web/make_index.py
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Summarise the build
+        run: |
+          {
+            echo "### Survey built"
+            echo
+            sed -n 's/.*Survey contains \([0-9]*\) survey stations, joined by \([0-9]*\) legs.*/- **\1** stations, **\2** legs/p' therion.log | head -1
+            sed -n 's/.*Total length of survey legs = *\([0-9.]*\)m.*/- Surveyed length **\1 m**/p' therion.log | head -1
+            sed -n 's/.*Vertical range = \([0-9.]*\)m.*/- Vertical range **\1 m**/p' therion.log | head -1
+            echo
+            echo "| File | Size |"
+            echo "| --- | ---: |"
+            for f in output/*.pdf output/*.svg output/*.3d output/*.lox; do
+              [ -e "$f" ] || continue
+              printf '| `%s` | %s |\n' "$(basename "$f")" "$(du -h "$f" | cut -f1)"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ---- pull requests: attach the results, don't publish ----------
+      - name: Upload build for review
+        if: github.event_name == 'pull_request'
+        id: pr_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: survey-${{ github.event.pull_request.number }}-${{ github.sha }}
+          path: output/
+          retention-days: 14
+
+      - name: Comment on the PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const art = '${{ steps.pr_artifact.outputs.artifact-url }}';
+            let stats = '';
+            try {
+              const log = fs.readFileSync('therion.log', 'utf8');
+              const s = log.match(/Survey contains (\d+) survey stations, joined by (\d+) legs/);
+              const l = log.match(/Total length of survey legs\s*=\s*([\d.]+)m/);
+              const v = log.match(/Vertical range = ([\d.]+)m/);
+              if (s) stats += `- **${s[1]}** stations, **${s[2]}** legs\n`;
+              if (l) stats += `- Surveyed length **${l[1]} m**\n`;
+              if (v) stats += `- Vertical range **${v[1]} m**\n`;
+            } catch (e) {}
+
+            const files = fs.readdirSync('output')
+              .filter(f => /\.(pdf|svg|3d|lox)$/.test(f))
+              .sort()
+              .map(f => `\`${f}\``).join(' · ');
+
+            const body = [
+              '### 🗺️ Survey rebuilt from this PR',
+              '',
+              stats,
+              `**[⬇︎ Download the built sheets](${art})** — unzip and open \`index.html\`.`,
+              '',
+              `<sub>${files}</sub>`,
+              '',
+              `<sub>[Full build log](${run}) · commit \`${context.sha.slice(0,7)}\`</sub>`,
+            ].join('\n');
+
+            // Update our own previous comment rather than adding a new one
+            // on every push to the branch.
+            const marker = '### 🗺️ Survey rebuilt from this PR';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const mine = comments.find(c =>
+              c.user.type === 'Bot' && c.body.startsWith(marker));
+            if (mine) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: mine.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body,
+              });
+            }
+
+      # ---- main: publish to Pages ------------------------------------
+      - name: Setup Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output/
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

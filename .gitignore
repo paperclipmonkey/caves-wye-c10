@@ -1,0 +1,4 @@
+output/
+therion.log
+*.xvi.bak
+.DS_Store

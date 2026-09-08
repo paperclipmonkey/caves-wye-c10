@@ -1,0 +1,625 @@
+encoding utf-8
+
+# =====================================================================
+#  C10 -- Therion configuration
+#  ---------------------------------------------------------------
+#  Run it with:      therion            (in this directory)
+#  or:               therion thconfig
+#
+#  A thconfig answers three questions:
+#     1. WHERE is the data?          -> source / input
+#     2. WHAT should be drawn?       -> select / maps
+#     3. HOW should it look?         -> layout, and then export
+# =====================================================================
+
+
+# ---------------------------------------------------------------------
+# 1. DATA
+#    `source` reads a .th file. `input` is the same thing; by convention
+#    `source` is used in the config and `input` inside survey files.
+#    Paths are relative to this file.
+# ---------------------------------------------------------------------
+source "survey/C10.th"
+
+# Output coordinate system. This is a CONFIG-level command -- the `cs`
+# option inside a layout does NOT set it, and without this Therion picks
+# a UTM zone from the fix and quietly uses that instead (watch for
+# "output coordinate system: ..." in therion.log). EPSG:27700 is the
+# British National Grid.
+cs EPSG:27700
+
+
+# ---------------------------------------------------------------------
+# 2. SELECTION
+#    By default Therion exports everything. `select` narrows it down;
+#    `unselect` removes. Selecting a map keeps its scraps together and
+#    in the right drawing order.
+#      select <map/survey> [-recursive on/off]
+#
+#    Handy: comment out a `select` line to drop a passage from a sheet
+#    without touching a single drawing.
+#
+#    There is no sections map yet -- the C10PX* scraps are empty. Add
+#    `select m-C10-sections@C10` once they have walls in them.
+# ---------------------------------------------------------------------
+select m-C10-plan@C10
+select m-C10-extended@C10
+
+
+# =====================================================================
+# 2b. COLOUR LOOKUP  (not active yet -- see below)
+#
+#     Depth tinting needs closed passage outlines to fill, and C10 has
+#     none drawn yet, so `colour map-fg` is a flat tone for now and the
+#     colour key is off.
+#
+#     Once the walls are drawn, delete the `colour map-fg`/`colour-legend`
+#     pair in the layout below, uncomment their neighbours, and uncomment
+#     this block. It replaces Therion's stock rainbow ramp -- which is
+#     loud, not perceptually ordered, and fights every black line drawn
+#     over it -- with a light sand-to-slate one.
+#
+#     IMPORTANT: these bands are fixed numbers. The survey currently
+#     spans 103.5 m to 109.0 m; widen the range as the cave grows or the
+#     ends will clamp to a flat colour. `therion.log` reports the
+#     vertical range on every build.
+#
+#     lookup also works on explo-date, topo-date, map and scrap -- a
+#     date lookup makes a lovely "what was found when" plan.
+#
+# lookup altitude -title "Altitude"
+# 110 [97 95 90] "110 m"
+# 108 [88 92 88]
+# 106 [74 86 86]
+# 104 [58 78 82]
+# 102 [44 68 76] "102 m"
+# endlookup
+
+
+# =====================================================================
+# 3. LAYOUTS
+#    A layout is a named bundle of appearance settings. Layouts can
+#    inherit from each other with `copy`, so keep the shared house style
+#    in one base layout and make small variants from it.
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# 3a. The house style -- everything the sheets have in common.
+# ---------------------------------------------------------------------
+layout base-C10
+
+  # --- scale and orientation ------------------------------------------
+  # scale <on paper> <in reality>. 1 100 == 1:100.
+  scale 1 150
+
+  # base-scale optically shrinks/enlarges as if the 1:<base-scale> map
+  # had been photo-reduced -- line weights and text shrink with it.
+  # Without it, dropping to 1:500 leaves the text comically large.
+  # base-scale 1 100
+
+  units metric              # or imperial
+  north true                # or `grid`, if a cs is defined
+  rotate 0                  # rotate the whole sheet, in degrees
+
+  # --- symbols ---------------------------------------------------------
+  # Predefined sets: UIS, ASF, AUT, BCRA, NSS, NZSS, SBE, SKBB.
+  # Case sensitive.
+  symbol-set UIS
+
+  # Mix and match: take just the entrance symbol from the BCRA set.
+  # symbol-assign point entrance BCRA
+
+  # Hide things you don't want. Groups: all, centerline, sections,
+  # water, speleothems, passage-fills, ice, sediments, equipment;
+  # plus point cave-station, point surface-station, group text; and
+  # flag:<entrance/continuation/sink/spring/doline/dig>.
+  #
+  # The centreline and its splay shots are LEFT VISIBLE here. On a
+  # finished survey you hide them (`symbol-hide group centerline`) so
+  # only the drawn passage shows -- but C10 has no walls yet, and the
+  # splays are the shape of the cave. They are what you trace over.
+  symbol-show group centerline
+
+  # NOTE ON SPLAYS: they are NOT drawn here, and cannot be. Therion
+  # treats splay shots as "hidden in maps and models by default" and
+  # filters them out before they ever reach a line symbol -- no symbol
+  # set draws them, and `symbol-show line survey:splay` is not a valid
+  # specification. (`ATTR__shotflag_splay` exists for METAPOST, but
+  # only 3D model exports have an `-enable splay-shots` switch.)
+  #
+  # To trace over the splays, open survey/C10.plan.th2 in XTherion or
+  # Therion Studio with sketch/C10.plan.xvi as the backdrop -- the XVI
+  # has every splay in it. output/C10-walls.lox is a 3D model built
+  # from them (`-wall-source splays`), which is a good sanity check on
+  # passage shape before you commit to walls on the plan.
+  #
+  # Different symbol sets draw the centreline itself differently: UIS
+  # draws each leg as a full line, SKBB and AUT draw short stubs at each
+  # station instead. Full lines are what you want while the walls are
+  # missing, so UIS is kept.
+
+  # Recolour individual symbols or whole groups.
+  symbol-colour point water-flow [0 40 100]
+  symbol-colour group water [0 40 100]
+
+  # Suppress clutter: nothing smaller than "small" is drawn.
+  # min-symbol-scale s
+
+  # --- typography ------------------------------------------------------
+  # fonts-setup <tiny> <small> <normal> <large> <huge>, in points.
+  #
+  # Retune this whenever you change the font in therion.ini. Point size
+  # is not a like-for-like measure between faces: DejaVu Sans has a much
+  # larger x-height and wider glyphs than Therion's default Computer
+  # Modern Sans, so it reads a good deal bigger at the same nominal
+  # size. These numbers are about 15% down from the Computer Modern
+  # values (8 10 12 16 22) to compensate.
+  fonts-setup 6.5 8.5 10 13.5 18
+
+  # --- colour ----------------------------------------------------------
+  colour-model rgb          # rgb for screen, cmyk for print, grayscale
+  colour map-bg [100 100 100]
+
+  # `colour map-fg` accepts a literal colour OR one of:
+  #    altitude -> tint the passage by depth (the classic Therion look)
+  #    scrap    -> a different tint per scrap, for checking your joins
+  #    map      -> a different tint per map
+  # Flat tone for now -- see the COLOUR LOOKUP note above. Swap these
+  # two lines for the two commented ones once the walls are drawn.
+  colour map-fg [92 92 92]
+  colour-legend off
+  # colour map-fg altitude
+  # colour-legend smooth    # smooth / discrete / off
+  smooth-shading quick
+
+  # --- grid ------------------------------------------------------------
+  # A grid over the passage is the single biggest thing that dates a
+  # Therion sheet. It is off here; the coordinate system and the
+  # entrance fix are stated in the footer instead, which is enough for
+  # anyone who needs to find the cave.
+  #
+  # If you do want it back:
+  #   grid bottom            off / top / bottom
+  #   grid-size 10 10 10 m   coarse enough that the border labels
+  #                          don't collide -- six-figure coordinates
+  #                          in a wide font need ~10 m at 1:100
+  #   grid-coords border     off / border / all -- needs cs + fix
+  grid off
+
+  # --- scale bar and legend --------------------------------------------
+  scale-bar 10 m
+
+  # The legend is a key to the map symbols, drawn as part of the map
+  # header block. Three settings:
+  #    on   -- only the symbols this map actually uses  <- what you want
+  #    all  -- every symbol in the current symbol set, used or not.
+  #            Good for printing a standing reference sheet; see the
+  #            C10-symbol-key.pdf export at the bottom of this file.
+  #    off  -- no key
+  # Symbols appear in the key only if they are drawn somewhere in the
+  # exported map, so a sheet with no water on it has no water entry.
+  legend on
+  # \insertlegend divides the current \hsize by this, and the register is
+  # reset from this option every time the key is inserted -- setting
+  # \legendcolumns inside `code tex-map` has no effect.
+  # 4 suits the wide plan sheet; the narrower elevation and sections
+  # sheets drop to 2 below. Too many columns on a narrow sheet and the
+  # captions wrap mid-word.
+  legend-columns 4
+  legend-width 17 cm        # only used by Therion's own header block
+
+  # --- transparency ----------------------------------------------------
+  transparency on
+  opacity 70
+
+  # --- PDF metadata (shows in the reader's document properties) --------
+  doc-title    "C10 -- Bric 4 Group"
+  doc-author   "Lizzie Waterworth / Bric 4 Group"
+  doc-subject  "Cave survey, C10"
+  doc-keywords "cave survey, Therion, C10, Bric 4 Group, Mendip"
+
+  # Geospatial PDF: lets Acrobat/QGIS read real coordinates off the map.
+  # Real here: the entrance fix in survey/C10.th is a GPS reading.
+  geospatial on
+
+  # --- debugging -------------------------------------------------------
+  # `debug` overlays the scrap at each stage of Therion's warping, so
+  # you can see how far your sketch was stretched to fit the survey.
+  #   on / all / first / second / scrap-names / station-names / off
+  debug off
+
+  # --- the sheet composition -------------------------------------------
+  # `code tex-map` hands you the page. Define \maplayout and Therion's
+  # own header block is replaced wholesale -- which means map-header,
+  # map-header-bg and map-image above are IGNORED once this exists.
+  # They are left in place because they are what you would use on a
+  # plainer sheet, and because copy-ing this layout without the code
+  # block brings them back.
+  #
+  # \legendbox{<x>}{<y>}{<anchor>}{<content>}
+  #   x and y are percentages of the MAP area, 0 0 bottom-left.
+  #   <anchor> is which corner of the box lands on that point, so
+  #   {0}{100}{SW} pins the box's bottom-left to the map's top-left and
+  #   the box therefore sits ABOVE the drawing. The page grows to fit
+  #   whatever falls outside 0-100, which is how the title gets a band
+  #   above the cave and the scale bar a band below it.
+  #
+  # Content is plain TeX. Useful things Therion defines:
+  #   \the\cavename \the\comment \the\cavelength \the\cavedepth
+  #   \the\exploteam \the\topoteam \the\cartoteam \the\copyrights
+  #   \the\explodate \the\topodate \the\cartodate \the\currentdate
+  #   \the\outcscode \the\outcsname \the\northdir \the\magdecl
+  #   \northarrow \scalebar \altitudebar \formattedlegend
+  #   \iflegend \ifscalebar \ifnortharrow \insertlegend
+  #   \ss (sans) \si (sans oblique) \setsize[pt] \rgbcolor[r g b]
+  code tex-map
+
+    % ---- compatibility shims ----------------------------------------
+    % The CI container currently ships Therion 6.3.4, which predates
+    % some of the TeX helpers 6.4 defines. Guarding them with \ifx keeps
+    % this file working on both, and costs nothing once the container
+    % catches up. If a sheet dies with "Undefined control sequence" and
+    % an <inserted text> naming a macro, add it here.
+    \ifx\setsize\undefined  \def\setsize[#1]{\size[#1]}\fi
+    \ifx\rgbcolor\undefined \def\rgbcolor[#1 #2 #3]{}\fi
+
+    % ---- house typography -------------------------------------------
+    % NOTE: \setsize[n] also does \basefontsize=n, and \basefontsize is
+    % a COUNT register -- so \setsize[9.5] sets size 9.5 and then leaves
+    % a stray ".5" in the output. Use whole numbers with \setsize, or
+    % \size[9.5] (which only sets the size) when you want a fraction.
+    \legendtextcolor={\rgbcolor[20 22 25]}
+    \legendtextsize={\setsize[9]}
+    \legendtextsectionsize={\setsize[10]}
+    \legendtextheadersize={\setsize[30]}
+
+    \newdimen\footL \newdimen\footR \newdimen\footW \newdimen\footT
+    % Minimum footer width -- a sheet that needs a wider one (the symbol
+    % key, with its six legend columns) raises this in its own layout.
+    \ifx\footWmin\undefined \newdimen\footWmin \footWmin=18cm \fi
+
+    % Per-sheet hook. Empty here; plan-sheet redefines it to drop the
+    % photo in. A layout that `copy`s this one emits this code block
+    % first and its own second, so the later \def wins.
+    \def\sheetextras{}
+    \def\hairline{\vskip2.4mm\hrule height 0.3pt\vskip2.6mm}
+    \def\lbl#1{{\size[7]\rgbcolor[48 51 56]#1\rgbcolor[20 22 25]}}
+    \def\field#1#2{\vtop{\hbox{\lbl{#1}}\vskip1mm\hbox{{\size[10]#2}}}}
+    % ...and a variant that disappears entirely when its value is empty,
+    % so an unfilled credit does not leave a stranded label behind.
+    \def\optfield#1#2{\edef\tmp{#2}\ifx\tmp\empty\else
+      \field{#1}{#2}\hskip8mm plus 5mm\fi}
+
+    \def\maplayout{
+
+      % ---- title band, above the drawing ----------------------------
+      % The north arrow rides on the same row rather than being pinned
+      % to the map's top-right corner: on a tall narrow survey the map
+      % is narrower than the title text, and a corner-pinned arrow
+      % lands on top of the title.
+      \legendbox{0}{100}{SW}{\vbox{
+        \footW=\hsize \ifdim\footW<\footWmin \footW=\footWmin \fi
+        \hsize=\footW
+        \footT=\footW \advance\footT by -30mm
+        \line{%
+          % Leave room for the arrow, and let the subtitle wrap.
+          % GOTCHA: \legendbox is \def, not \long\def, so a \par token
+          % anywhere in its argument gives "Paragraph ended before
+          % \legendbox was complete" followed by a cascade of "Too many
+          % }'s". \endgraf is \let to the same primitive under a
+          % different name, so it ends the paragraph without tripping
+          % TeX's runaway-argument check. Blank lines expand to \par
+          % too -- keep them out of these boxes.
+          \vtop{\hsize=\footT
+                \hbox{\the\legendtextheadersize\ss\the\cavename}
+                \vskip2mm
+                {\size[9]\si\rightskip=0pt plus 3em\the\comment\endgraf}}%
+          \hfil
+          \ifnortharrow\hbox{\northarrow}\fi}
+        \vskip6mm
+      }}
+
+      % ---- photo, tucked into the empty bottom-right of the drawing ---
+      % \loadpicture takes PDF, JPEG or PNG. A relative path works, but
+      % \savepath resolves it once and is what you need if you ever
+      % share a layout between projects in different directories.
+      % There is no scale option -- resize the file itself.
+      % anything a particular sheet wants to add (see plan-sheet)
+      \sheetextras
+
+      % ---- footer band, below the drawing ----------------------------
+      \legendbox{0}{0}{NW}{\vbox{
+
+        % \hsize here is the width of the DRAWING, not of the page, and
+        % a sheet of cross sections is only a few centimetres wide. Left
+        % alone, the footer tries to fit its credits into that and TeX
+        % starts drawing overfull-box slugs (solid black rectangles --
+        % that is what they are telling you). So give the footer a floor
+        % of \footWmin and let the page grow to it instead.
+        \footW=\hsize \ifdim\footW<\footWmin \footW=\footWmin \fi
+        \hsize=\footW
+
+        % Split the footer: symbol key on the left, depth ramp on the
+        % right -- but only reserve the right-hand column when there is
+        % actually a colour legend to put in it.
+        \ifcolorlegend \footR=5cm \else \footR=0cm \fi
+        \footL=\footW \advance\footL by -\footR
+        \ifcolorlegend \advance\footL by -12mm \fi
+
+        \vskip6mm
+        \hrule height 0.6pt
+        \vskip4mm
+
+        \line{%
+          \vtop{\hsize=\footL
+
+            % scale bar and the headline numbers
+            \line{%
+              \vtop{\hbox{\lbl{SCALE 1:150}}\vskip1mm\hbox{\scalebar}}%
+              \hskip10mm plus 6mm
+              \field{LENGTH}{\the\cavelength}\hskip8mm plus 5mm
+              \field{DEPTH}{\the\cavedepth}\hskip8mm plus 5mm
+              \field{COORDINATE SYSTEM}{\the\outcscode}\hskip8mm plus 5mm
+              \field{NORTH}{\the\northdir}%
+              \hfil}
+
+            \hairline
+
+            % credits
+            \line{\field{SURVEYED BY}{\the\topoteam}\hfil}
+            \vskip3mm
+            \line{%
+              \optfield{DRAWN BY}{\the\cartoteam}%
+              \optfield{EXPLORED BY}{\the\exploteam}%
+              \optfield{SURVEY DATE}{\the\topodate}%
+              \hfil}
+
+            \vskip3.5mm
+            \line{{\size[7]\rgbcolor[48 51 56]\the\copyrights\qquad
+                   Drawn with Therion \the\thversion\qquad
+                   Sheet generated \the\currentdate\rgbcolor[20 22 25]}\hfil}
+
+            % symbol key
+            \iflegend
+              \hairline
+              \hbox{\lbl{SYMBOLS}}
+              \vskip3mm
+              \insertlegend
+            \fi
+          }%
+          \hfil
+          % ---- depth ramp, right-hand column --------------------------
+          \vtop{\hsize=\footR
+            \ifcolorlegend
+              \hbox{\lbl{ALTITUDE}}
+              \vskip3mm
+              \insertcolorlegend
+            \fi
+          }%
+        }
+        \vskip3mm
+      }}
+    }
+  endcode
+
+endlayout
+
+
+# ---------------------------------------------------------------------
+# 3b. The plan sheet -- base style plus the header, credits and photo.
+# ---------------------------------------------------------------------
+layout plan-sheet
+  copy base-C10
+
+  # map-header <x> <y> <anchor>
+  #   x/y are percentages of the map area: 0 0 is bottom-left, 100 100
+  #   top-right, and the range runs -100..200 so you can push the header
+  #   off the drawing entirely. <anchor> says which corner or side of
+  #   the header block is pinned to that point.
+  #
+  #   The usual mistake is `0 100 nw`, which pins the header's top-LEFT
+  #   corner to the map's top-left and therefore lays it straight over
+  #   the cave -- and with map-header-bg on, hides it completely.
+  #   Anchoring `ne` instead makes the header grow leftwards, off the
+  #   drawing, and the page widens to suit.
+  map-header -8 100 ne      # -8% leaves a gutter for the grid coordinates
+
+  map-comment "SURVEY IN PROGRESS -- centreline only; passage walls are not drawn yet. Entrance fixed by GPS. Trace the splays from sketch/C10.plan.xvi."
+
+  # --- a photo, when you have one ---------------------------------------
+  # base-C10 defines \sheetextras as empty and calls it from \maplayout;
+  # redefining it here would add furniture to this sheet only. The second
+  # `code tex-map` is appended after the copied one, so this \def wins.
+  # Drop a JPEG/PNG/PDF in photo/ and uncomment:
+  #
+  # code tex-map
+  #   \def\sheetextras{
+  #     \savepath{entpic}{photo/entrance.jpg}
+  #     \legendbox{100}{4}{SE}{\loadpicture{entpic}}
+  #     \legendbox{100}{4}{NE}{\vbox{\vskip1.5mm\hbox{\lbl{ENTRANCE}}}}
+  #   }
+  # endcode
+
+  # --- statistics and credits ------------------------------------------
+  # `statistics <what> <how>`:
+  #   explo / topo   -> who explored / who surveyed
+  #   carto          -> who drew it (from the scraps' -author)
+  #   copyright      -> the scraps' -copyright strings
+  #   all / off / <n> -> list everyone / nobody / the top n
+  # and the -length / -count variants add the numbers next to each name.
+  statistics explo-length on
+  statistics topo-length on
+  statistics carto all
+  statistics copyright all
+  statistics explo all
+  statistics topo all
+
+
+
+endlayout
+
+
+# ---------------------------------------------------------------------
+# 3c. The extended elevation sheet.
+# ---------------------------------------------------------------------
+layout elevation-sheet
+  copy base-C10
+  # An extended elevation is a long, shallow strip, so the header goes
+  # above it (sw anchor = header's bottom-left on the map's top-left)
+  # rather than beside it.
+  map-header 0 100 sw
+  map-comment "SURVEY IN PROGRESS. Extended elevation: horizontal distances are unrolled along the passage and are not true distances."
+  statistics carto all
+  statistics copyright all
+  # Depth tinting is redundant on an elevation -- height is already the
+  # vertical axis -- so use a flat fill and drop the colour key.
+  colour map-fg [92 92 92]
+  colour-legend off
+  # The 1 m vertical grid that used to double as a height scale is gone
+  # with the rest of the grid; the passage-height labels and the
+  # altitude point carry that information instead. To bring it back:
+  #   grid bottom
+  #   grid-size 5 5 1 m
+  legend-columns 2
+endlayout
+
+
+# ---------------------------------------------------------------------
+# 3d. The cross sections on their own sheet.
+
+
+# ---------------------------------------------------------------------
+# 3e. A black-and-white variant for the office printer.
+#     One `copy` plus three overrides -- this is why layouts inherit.
+# ---------------------------------------------------------------------
+layout plan-bw
+  copy plan-sheet
+  colour-model grayscale
+  colour map-fg [100 100 100]
+  colour-legend off
+  transparency off
+endlayout
+
+
+# ---------------------------------------------------------------------
+# 3f. Atlas layout -- the cave chopped into overlapping numbered pages
+#     with navigation arrows, for taking underground.
+# ---------------------------------------------------------------------
+layout atlas-C10
+  copy base-C10
+  # Underground you would normally want 1:50 or 1:25. It is kept at
+  # 1:100 here because the pulled-out cross sections sit 25 m east of
+  # the cave, so the atlas has to cover a 26 x 21 m area and a larger
+  # scale produces page after page of blank paper. For a real atlas,
+  # export a plan map whose scrap has no `point section` anchors in it.
+  scale 1 150
+  size 21 29.7 cm           # page size (A4 portrait)
+  overlap 2 cm              # how much adjacent pages share
+  page-numbers on
+  title-pages on
+  nav-factor 30             # size of the "continued on page N" arrows
+  nav-size 2 2
+  page-grid on              # print a key plan showing the page layout
+  transparency off
+  map-header 0 100 sw
+endlayout
+
+
+# =====================================================================
+# 4. EXPORTS
+#    Each `export` line writes one file. Format is taken from the
+#    extension unless you give -fmt.
+#
+#    Any layout option can be overridden inline as -layout-<option>,
+#    e.g.  -layout-scale "1 250"  -- handy for one-off variants.
+# =====================================================================
+
+# --- 2D maps for printing --------------------------------------------
+export map -projection plan     -layout plan-sheet      -o "output/C10-plan.pdf"
+export map -projection extended -layout elevation-sheet -o "output/C10-extended.pdf"
+
+# The greyscale variant, same drawing, different layout.
+export map -projection plan -layout plan-bw -o "output/C10-plan-bw.pdf"
+
+# A reference chart wants a tall narrow block of symbols beside a small
+# map, which is exactly what Therion's own header block does -- so this
+# sheet puts \maplayout back to something close to the stock definition
+# rather than using the footer strip. \legendcontent is the preformatted
+# title + north arrow + scale bar + credits + legend that the default
+# layout uses; you get it back with a single \legendbox.
+layout symbol-key
+  copy base-C10
+  legend all                # the whole symbol set, not just what is used
+  legend-columns 6
+  legend-width 42 cm
+  grid off
+  scale 1 400
+  base-scale 1 100          # keep line weights and text at 1:100 sizes
+  code tex-map
+    \def\maplayout{\legendbox{-4}{100}{NE}{\the\legendcontent}}
+  endcode
+endlayout
+
+
+# A standing key to the whole UIS symbol set, not just the symbols this
+# cave happens to use -- a printable reference sheet, handy at a survey
+# workshop.
+#
+# GOTCHA: the legend is drawn INSIDE the map header block, so
+# `map-header ... off` removes the legend along with the title. Leave
+# the header on and just switch the legend to `all`.
+export map -projection plan -layout symbol-key -o "output/C10-symbol-key.pdf"
+
+# A quick overview at a smaller scale, with the header suppressed --
+# note the inline layout overrides.
+export map -projection plan -layout base-C10 \
+  -layout-scale 1 250 -layout-base-scale 1 100 \
+  -layout-legend off -layout-grid off \
+  -o "output/C10-overview.pdf"
+
+# The multi-page underground atlas.
+export atlas -projection plan -layout atlas-C10 -o "output/C10-atlas.pdf"
+
+# --- 2D maps for other software ---------------------------------------
+# SVG: editable in Inkscape/Illustrator for final tarting up.
+export map -projection plan -layout plan-sheet -fmt svg -o "output/C10-plan.svg"
+
+# XHTML: SVG plus a legend, opens in any browser.
+export map -projection plan -layout plan-sheet -fmt xhtml -o "output/C10-plan.xhtml"
+
+# DXF for CAD.
+export map -projection plan -layout base-C10 -fmt dxf -o "output/C10-plan.dxf"
+
+# XVI: a vector backdrop to trace over in XTherion, correctly scaled.
+export map -projection plan -layout base-C10 -fmt xvi -o "output/C10-plan.xvi"
+
+# --- GIS ---------------------------------------------------------------
+# These need a real cs + fix to land anywhere sensible.
+export map -projection plan -layout base-C10 -fmt kml -o "output/C10-plan.kml"
+
+# --- 3D models ----------------------------------------------------------
+# loch is Therion's own viewer format (the `loch` command opens it).
+export model -fmt loch -o "output/C10.lox"
+
+# Survex .3d, for Aven / anyone who hasn't got Therion.
+export model -fmt survex -o "output/C10.3d"
+
+# Modelled passage walls rather than a bare centreline. `wall-source`
+# picks where the walls come from: maps (your drawings), centerline
+# (LRUD), splays, or all.
+export model -fmt loch -wall-source splays \
+  -enable walls -enable splay-shots -o "output/C10-walls.lox"
+
+# --- lists and tables ---------------------------------------------------
+# The to-do list for the next trip: every station flagged
+# `continuation`, with its note and explored length.
+export continuation-list -fmt html -o "output/C10-continuations.html"
+export continuation-list -fmt txt  -o "output/C10-continuations.txt"
+
+# Summary tables.
+export cave-list   -location on -o "output/C10-caves.html"
+export survey-list -o "output/C10-surveys.html"
+
+# The whole centreline as SQL or CSV, for your own queries.
+export database -fmt sql -o "output/C10.sql"
+export database -fmt csv -o "output/C10.csv"

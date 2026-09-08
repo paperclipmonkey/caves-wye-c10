@@ -1,0 +1,99 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -650.00 2100.00 700.00 -500.00
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "../sketch/C10.plan.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap C10-plan -projection plan
+
+point 0.0 0.0 station -name 1
+
+point 123.22514 -179.35315 station -name 2
+
+point 76.41468 229.01582 section -scrap C10PX2
+
+point 84.84961 -269.33722 station -name 3
+
+point -231.95992 -116.696526 section -scrap C10PX3
+
+point 105.00247 -340.93314 station -name 4
+
+point 19.848097 -490.5633 section -scrap C10PX4
+
+point 191.11934 -449.05557 station -name 5
+
+point 281.91055 -240.19757 section -scrap C10PX5
+
+point 157.76381 -494.40985 station -name 6
+
+point 321.82874 -640.59894 station -name 7
+
+point 273.9278 -785.5541 station -name 8
+
+point 289.33655 -875.2701 station -name 9
+
+point 20.938217 -697.3691 section -scrap C10PX9
+
+point 214.96121 -978.23737 station -name 10
+
+point 161.49675 -973.47363 station -name 11
+
+point -349.29816 -1088.4216 section -scrap C10PX11
+
+point 109.42042 -1081.9386 station -name 12
+
+point 400.1073 -1208.4917 section -scrap C10PX12
+
+point 41.531975 -1124.7129 station -name 13
+
+point 78.44164 -1260.298 station -name 14
+
+point 32.724102 -1335.5789 station -name 15
+
+point -30.706215 -1834.8239 section -scrap C10PX15
+
+point -120.54529 -1357.4493 station -name 16
+
+point -156.01689 -1163.1265 station -name 17
+
+point -226.64961 -894.0811 station -name 18
+
+point -199.82063 -758.8137 station -name 19
+
+point -182.14505 -456.56622 station -name 20
+
+point -51.552452 40.0543 label -text " tree " -scale xs
+
+endscrap
+
+scrap C10PX2 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX3 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX4 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX5 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX9 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX11 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX12 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
+
+scrap C10PX15 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+endscrap
