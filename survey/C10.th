@@ -434,6 +434,7 @@ survey C10 -title "C10 -- Bric 4 Group" -entrance 2
 
   map m-C10-plan -title "C10 -- plan"
     C10-plan
+    C10-surface
   endmap
 
   map m-C10-extended -title "C10 -- extended elevation"

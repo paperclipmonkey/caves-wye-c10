@@ -142,19 +142,6 @@ point -51.552452 40.0543 label -text " tree " -scale xs
   -149.4 -546.8 -158.4 -495.5 -164.7 -468.0
   -171.0 -440.5 -180.2 -422.1 -180.2 -422.1
   endline
-  # --- cliff face (surface feature, not passage wall) ----------------
-  # `slope` draws the scarp hachures. It is not a wall type, so it would
-  # default to -outline none and drop out of the scrap boundary; the
-  # explicit -outline out keeps the passage fill closed against it.
-  # l-size sets the hachure length in drawing units and must be given on
-  # at least one point.
-  line slope -outline out
-    -180.2 -422.1
-    l-size 22
-    -179.7 -415.6 -163.3 -353.7 -127.4 -312.1
-    -91.6 -270.4 -86.8 -247.2 -48.1 -227.8
-    -9.3 -208.5 32.3 -186.7 42.0 -189.6
-  endline
   line wall
     136.4 -172.3
     136.4 -172.3 136.1 -214.0 128.0 -232.4
@@ -193,20 +180,6 @@ point -51.552452 40.0543 label -text " tree " -scale xs
     5.3 -1446.2 9.9 -1487.4 6.2 -1502.4
   endline
 
-  # --- cliff face, continued east of the entrances -------------------
-  # Point order reversed (was NE->SW) so it runs the same way as the
-  # western segment. Slope hachures hang off one side of the line, so
-  # two segments of the same cliff drawn in opposite directions end up
-  # with ticks on opposite sides. Note `-reverse on` does NOT work here:
-  # it flips the geometry but leaves l-size attached to what is now the
-  # last point, and Therion then fails with "no slope size specification
-  # at any line point". Reverse the coordinates instead.
-  line slope -outline out
-    136.4 -172.3
-    l-size 22
-    136.4 -172.3 216.2 -130.1 242.4 -78.8
-    268.5 -27.4 289.7 52.9 289.7 52.9
-  endline
 
   line wall
     -310.4 -606.3
@@ -252,19 +225,8 @@ point -51.552452 40.0543 label -text " tree " -scale xs
     smooth off
   endline
 
-  # --- cliff face, western continuation ------------------------------
-  # Every `slope` line needs an l-size on at least one point or the build
-  # stops with "no slope size specification at any line point". 22 to
-  # match the other two segments.
-  line slope -outline out
-  -310.9 -609.9
-  l-size 22
-  smooth off
-  -310.9 -609.9 -320.3 -632.2 -350.3 -657.5
-  -366.1 -670.8 -428.6 -702.6 -428.6 -702.6
-  smooth off
-  endline
   point -32.4 -1631.2 continuation
+
 
 endscrap
 
@@ -343,3 +305,90 @@ scrap C10PX15 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
 
 endscrap
 
+# =====================================================================
+#  Surface features -- the cliff the two entrances open onto.
+#
+#  These live in their OWN scrap, not in C10-plan, because Therion
+#  clips a scrap's contents to that scrap's outline. Drawn inside the
+#  passage scrap the cliff has to be either:
+#    -outline out  -- it becomes part of the passage boundary, and the
+#                     hillside between cliff and wall fills as if it
+#                     were cave, or
+#    -outline none -- it falls outside the passage outline and is
+#                     clipped away entirely.
+#  Neither is right. A separate scrap has its own outline, so the cliff
+#  draws in full and the passage fill stays where it belongs.
+#
+#  The three stations are here only to register this scrap against the
+#  centreline -- Therion fits every scrap by its stations, and without
+#  them a plan scrap has nothing to place it by. `-visibility off`
+#  stops them being drawn a second time on top of C10-plan's copies.
+# =====================================================================
+scrap C10-surface -projection plan
+
+  point 0.0 0.0                 station -name 1  -visibility off
+  point 123.22514 -179.35315    station -name 2  -visibility off
+  point -182.14505 -456.56622   station -name 20 -visibility off
+
+  # --- cliff face (surface feature, not passage wall) ----------------
+  # `slope` draws the scarp hachures. It is not a wall type, so it would
+  # default to -outline none and drop out of the scrap boundary; the
+  # explicit -outline out keeps the passage fill closed against it.
+  # l-size sets the hachure length in drawing units and must be given on
+  # at least one point.
+  line slope
+    -180.2 -422.1
+    l-size 22
+    -179.7 -415.6 -163.3 -353.7 -127.4 -312.1
+    -91.6 -270.4 -86.8 -247.2 -48.1 -227.8
+    -9.3 -208.5 32.3 -186.7 42.0 -189.6
+  endline
+  # --- cliff face, continued east of the entrances -------------------
+  # Point order reversed (was NE->SW) so it runs the same way as the
+  # western segment. Slope hachures hang off one side of the line, so
+  # two segments of the same cliff drawn in opposite directions end up
+  # with ticks on opposite sides. Note `-reverse on` does NOT work here:
+  # it flips the geometry but leaves l-size attached to what is now the
+  # last point, and Therion then fails with "no slope size specification
+  # at any line point". Reverse the coordinates instead.
+  line slope
+    136.4 -172.3
+    l-size 22
+    136.4 -172.3 216.2 -130.1 242.4 -78.8
+    268.5 -27.4 289.7 52.9 289.7 52.9
+  endline
+  # --- cliff face, western continuation (points reversed to run SW -> NE
+  # like the other segments, so all the hachures fall on one side) ------------------------------
+  # Every `slope` line needs an l-size on at least one point or the build
+  # stops with "no slope size specification at any line point". 22 to
+  # match the other two segments.
+  line slope
+    -428.6 -702.6
+    l-size 22
+    -350.3 -657.5
+    -310.9 -609.9
+  endline
+  # --- cliff face, the gap between the two traced segments -----------
+  # Traced from the RED sketch polyline in sketch/C10.plan.xvi. The XVI
+  # shares the .th2 coordinate space exactly -- XVIstations and the
+  # `point ... station` entries are the same numbers -- so the sketch
+  # coordinates drop straight in with no transform. Ends snapped to the
+  # neighbouring segments so the scrap outline closes.
+  # Runs SW -> NE like the others, to keep the hachures on one side.
+  line slope
+    -310.9 -609.9
+    l-size 22
+    -301.1 -590.9
+    -295.2 -571.5
+    -286.9 -556.2
+    -278.1 -543.9
+    -277.5 -540.9
+    -260.5 -522.1
+    -248.1 -501.5
+    -228.1 -472.7
+    -217.0 -460.4
+    -214.6 -459.2
+    -194.6 -435.1
+    -180.2 -422.1
+  endline
+endscrap
