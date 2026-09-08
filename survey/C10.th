@@ -10,7 +10,7 @@ encoding utf-8
 #  project for C7 has the same structure with fuller commentary.
 # =====================================================================
 
-survey C10 -title "C10 -- Bric 4 Group" -entrance 1
+survey C10 -title "C10 -- Bric 4 Group" -entrance 2
 
   # SexyTopo's own filenames are kept so a fresh export from the phone
   # drops straight in without renaming anything.
@@ -57,18 +57,22 @@ survey C10 -title "C10 -- Bric 4 Group" -entrance 1
     sd clino 0.5 degrees
 
     # --- georeferencing ------------------------------------------------
-    # These coordinates are REAL, from a GPS fix at the entrance
-    # (unlike the C7 project, where they are placeholders). They give
-    # altitudes above sea level, a geospatial PDF and a usable KML.
-    # Position of station 1 as longitude, latitude, metres a.s.l.
+    # These coordinates are REAL (unlike the C7 project, where they are
+    # placeholders). They give altitudes above sea level, a geospatial
+    # PDF and a usable KML. Position of station 1 -- the tree, not an
+    # entrance -- as longitude, latitude, metres a.s.l.
     cs long-lat
     fix 1 -2.637971 51.837160 103.5   2.3 2.3 4.3
 
     # --- station metadata ---------------------------------------------
     # The comment on an entrance-flagged station is PRINTED on the map,
     # so keep it to a name.
-    station 1 "C10 entrance"    entrance
-    station 20 "End of survey"  continuation           # <<< EDIT
+    # Station 1 is a TREE on the surface, not a cave station -- it is
+    # the GPS control point that the survey hangs off. Station 2 is the
+    # first entrance, station 20 the second.
+    station 1  "GPS tree"
+    station 2  "C10 upper entrance"  entrance
+    station 20 "C10 lower entrance"  entrance
 
     # --- the data -------------------------------------------------------
     # A "to" station of "-" marks a SPLAY shot: used for passage walls
@@ -76,10 +80,21 @@ survey C10 -title "C10 -- Bric 4 Group" -entrance 1
     # SexyTopo kept are commented out; uncomment to have Therion average
     # them.
     data normal from to tape compass clino ignoreall
+
+    # Station 1 is a tree on the surface, so 1 -> 2 is a surface tie to
+    # the first entrance rather than cave passage. `flags surface` keeps
+    # the leg in the geometry -- station 1 still carries the GPS fix that
+    # georeferences everything -- but takes it out of the length and
+    # depth statistics, and draws it with the surface-centreline symbol
+    # instead of as passage. Remember to turn the flag off again, or
+    # every following shot inherits it.
+    flags surface
 1	2	4.768	145.51	24.12	
 #1	2	4.767	145.51	24.15
 #1	2	4.768	145.51	24.14
 #1	2	4.769	145.50	24.07
+    flags not surface
+
 2	-	1.730	267.20	10.61	
 2	-	1.869	265.19	32.95	
 2	-	1.084	14.90	83.98	

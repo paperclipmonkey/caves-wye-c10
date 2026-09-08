@@ -435,7 +435,7 @@ layout plan-sheet
   #   drawing, and the page widens to suit.
   map-header -8 100 ne      # -8% leaves a gutter for the grid coordinates
 
-  map-comment "SURVEY IN PROGRESS -- passage walls are still being drawn and the outline is not yet closed. Entrance fixed by GPS."
+  map-comment "SURVEY IN PROGRESS -- passage walls are still being drawn and the outline is not yet closed. Tied to a GPS fix at the tree above the upper entrance."
 
   # --- a photo, when you have one ---------------------------------------
   # base-C10 defines \sheetextras as empty and calls it from \maplayout;

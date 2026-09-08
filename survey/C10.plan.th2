@@ -264,9 +264,54 @@ point -51.552452 40.0543 label -text " tree " -scale xs
   -366.1 -670.8 -428.6 -702.6 -428.6 -702.6
   smooth off
   endline
+  point -32.4 -1631.2 continuation
+
 endscrap
 
 scrap C10PX2 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
+
+  line wall -close on
+    -12.2 -51.9
+    smooth off
+    -28.1 -50.8
+    smooth off
+    -43.5 -43.9
+    smooth off
+    -47.0 -42.0
+    smooth off
+    -56.5 -24.5
+    smooth off
+    -57.1 2.9
+    smooth off
+    -46.7 20.5
+    smooth off
+    -39.5 43.3
+    smooth off
+    -25.4 55.8
+    smooth off
+    -14.0 59.0
+    smooth off
+    -10.2 70.5
+    smooth off
+    4.5 69.1
+    smooth off
+    21.0 67.5
+    smooth off
+    30.2 44.7
+    smooth off
+    44.5 22.3
+    smooth off
+    57.0 -3.2
+    smooth off
+    52.9 -36.7
+    smooth off
+    36.5 -52.4
+    smooth off
+    8.6 -70.5
+    smooth off
+    8.6 -70.5 -1.9 -66.8 -7.0 -64.9
+    -12.2 -63.0 -12.2 -51.9 -12.2 -51.9
+  endline
 
 endscrap
 
@@ -298,48 +343,3 @@ scrap C10PX15 -projection none -scale [0 0 500.00 500.00 0 0 10.00 10.00 m]
 
 endscrap
 
-scrap scrap-1 -scale [-449.3 -1999.93 500.11 -1999.93 0.0 0.0 24.115014 0.0 m]
-  point -32.4 -1631.2 continuation
-  line wall -close on
-  75.3 217.6
-  smooth off
-  59.4 218.7
-  smooth off
-  44.0 225.6
-  smooth off
-  40.5 227.5
-  smooth off
-  31.0 245.0
-  smooth off
-  30.4 272.4
-  smooth off
-  40.8 290.0
-  smooth off
-  48.0 312.8
-  smooth off
-  62.1 325.3
-  smooth off
-  73.5 328.5
-  smooth off
-  77.2 340.0
-  smooth off
-  91.9 338.6
-  smooth off
-  108.4 337.0
-  smooth off
-  117.7 314.2
-  smooth off
-  132.0 291.8
-  smooth off
-  144.5 266.3
-  smooth off
-  140.3 232.8
-  smooth off
-  124.0 217.1
-  smooth off
-  96.1 199.0
-  smooth off
-  96.1 199.0 85.6 202.7 80.4 204.6
-  75.2 206.5 75.3 217.6 75.3 217.6
-  endline
-endscrap
