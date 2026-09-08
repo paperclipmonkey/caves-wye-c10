@@ -24,7 +24,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      # output/ is git-ignored, so it does not exist in a fresh checkout
+      # and Therion will not create it -- it fails at the copy step with
+      # "cannot copy: No such file or directory".
+      - name: Create output directory
+        run: mkdir -p output
 
       # The container carries Therion, a TeX distribution, METAPOST,
       # Ghostscript and python3 -- everything the build needs.
